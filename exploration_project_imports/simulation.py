@@ -5,16 +5,23 @@ from numpy import (
     zeros,
 )
 
+
 class PunctureJob:
     def __init__(
             self,
     ) -> None:
         self.critical: int = 0  # 0==False, 1==True
+        self.delay: int = 0  # 0==False, 1==True
 
     def set_critical(
             self,
     ) -> None:
         self.critical = 1
+
+    def set_delayed(
+            self
+    ) -> None:
+        self.delay = 1
 
 
 class PuncturingSimulation:
@@ -26,6 +33,7 @@ class PuncturingSimulation:
             probability_rb_occupation: float,
             probability_new_puncture_request: float,
             probability_critical_request: float,
+            reward_weights: dict,
             verbosity: int,
             rng,
     ) -> None:
@@ -38,6 +46,7 @@ class PuncturingSimulation:
         self.probability_rb_occupation: float = probability_rb_occupation
         self.probability_new_puncture_request: float = probability_new_puncture_request
         self.probability_critical_request: float = probability_critical_request
+        self.reward_weights: dict = reward_weights
 
         self.step_id: int = 0  # 0.. 6
         self.resource_block_occupation: dict = {rb_id: 0 for rb_id in range(1, num_resource_blocks + 1)}
@@ -109,7 +118,7 @@ class PuncturingSimulation:
         state[1] = 1.0 if self.puncture_queue else 0.0  # is puncturing prompt?
         state[2] = 1.0 if self.puncture_queue and self.puncture_queue[0].critical == 1 else 0.0  # puncturing prompt critical?
         state[3:3+self.num_resource_blocks] = list(self.resource_block_occupation.values())
-        state[3:3+self.num_resource_blocks] = state[3:3+self.num_resource_blocks] / (self.num_steps_per_frame)
+        state[3:3+self.num_resource_blocks] = state[3:3+self.num_resource_blocks] / self.num_steps_per_frame
 
         return state
 
@@ -117,9 +126,15 @@ class PuncturingSimulation:
             self,
             puncture_resource_block_id
     ) -> float:
-        # puncture
+        # PUNCTURE------------------------------------------------------------------------------------------------------
+        immediate_puncture = 0.0
         if puncture_resource_block_id > 0:
+            # if there was a prompt and it was not delayed
+            if self.puncture_queue and self.puncture_queue[0].delay == 0:
+                immediate_puncture = 1.0
+            # clear prompts
             self.puncture_queue = []
+            # if puncture on rb that was occupied
             if self.resource_block_occupation[puncture_resource_block_id] > 0:
                 self.resource_block_occupation[puncture_resource_block_id] = 0
                 self.stats['tx interrupted'] += 1
@@ -131,7 +146,7 @@ class PuncturingSimulation:
             self.stats['critical punctures missed'] += 1
             self.puncture_queue.pop()
             print('critical puncture missed')
-            critical_puncture_miss = -1000.0
+            critical_puncture_miss = -1.0
 
         # if prompt still present at frame end after puncture
         puncture_miss = -0.0
@@ -139,18 +154,19 @@ class PuncturingSimulation:
             self.stats['punctures missed'] += 1
             self.puncture_queue.pop()
             print('puncture missed')
-            puncture_miss = -5.0
+            puncture_miss = -1.0
 
-        # sum capacity
+        # SUM CAPACITY--------------------------------------------------------------------------------------------------
         sum_capacity = 0
         for rb_id in self.resource_block_occupation:
             if self.resource_block_occupation[rb_id] > 0:
                 sum_capacity += log2(1 + self.rb_power_gains[rb_id])
 
         return (
-            + sum_capacity
-            + puncture_miss
-            + critical_puncture_miss
+            + self.reward_weights['sum_capacity'] * sum_capacity
+            + self.reward_weights['immediate_puncture'] * immediate_puncture
+            + self.reward_weights['puncture_miss'] * puncture_miss
+            + self.reward_weights['critical_puncture_miss'] * critical_puncture_miss
         )
 
     def _roll_new_rb_power_gain(
@@ -199,6 +215,8 @@ class PuncturingSimulation:
                 if self.rng.random() < self.probability_critical_request:
                     self.puncture_queue[0].set_critical()
                     self.stats['critical punctures prompted'] += 1
+        else:
+            self.puncture_queue[0].set_delayed()
 
         # print('pq', self.puncture_queue)
 
