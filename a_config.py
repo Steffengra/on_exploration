@@ -1,7 +1,4 @@
 
-test
-
-
 
 class Config:
     def __init__(
