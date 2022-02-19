@@ -70,7 +70,7 @@ class DQNDeterministic(Model, ABC):
         return return_estimates
 
 
-class DQNAleatic(Model, ABC):
+class DQNAleatoric(Model, ABC):
     def __init__(
             self,
             num_actions: int,
@@ -183,7 +183,7 @@ class ValueNetwork(Model, ABC):
         return x
 
 
-class PolicyNetworkAleatic(Model, ABC):
+class PolicyNetworkAleatoric(Model, ABC):
     def __init__(
             self,
             num_actions: int,

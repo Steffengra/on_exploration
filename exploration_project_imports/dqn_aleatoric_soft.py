@@ -3,7 +3,6 @@ from numpy import (
     newaxis,
     argmax,
     log,
-    zeros,
 )
 from tensorflow import (
     float32,
@@ -15,7 +14,6 @@ from tensorflow import (
     GradientTape,
     clip_by_value,
     function,
-    print as tf_print,
 )
 from tensorflow.math import (
     log as tf_log,
@@ -30,7 +28,7 @@ from pathlib import (
 from exploration_project_imports.neural_networks import DQNAleatic
 
 
-class DQNAleaticSoftWrap:
+class DQNAleatoricSoftWrap:
     def __init__(
             self,
             rng,
@@ -80,11 +78,9 @@ class DQNAleaticSoftWrap:
 
     def save_networks(
             self,
-            sample_input,
             model_path: Path,
     ) -> None:
-        self.dqn(sample_input[newaxis])  # initialize
-        self.dqn.save(Path(model_path, 'dqn_aleatic_soft'))
+        self.dqn.save(Path(model_path, 'dqn_aleatoric_soft'))
 
     @function
     def train(
@@ -105,8 +101,9 @@ class DQNAleaticSoftWrap:
         # CALCULATE NEXT STATE ENTROPY
         #   this promotes actions that lead to states with high entropy == similar reward estimates
         # next_actions_return_estimates_exp_sum = reduce_sum(exp(next_return_estimates))
-        # next_actions_softmaxes = [exp(next_return_estimates[possible_action_id]) / next_actions_return_estimates_exp_sum
-        #                           for possible_action_id in range(self.num_actions)]
+        # next_actions_softmaxes = [
+        #     exp(next_return_estimates[possible_action_id]) / next_actions_return_estimates_exp_sum
+        #     for possible_action_id in range(self.num_actions)]
 
         # ASSEMBLE TARGET RETURN ESTIMATE
         target_reward_estimate = reward + self.future_reward_discount_gamma * (
@@ -128,8 +125,10 @@ class DQNAleaticSoftWrap:
 
             # ENTROPY LOSS
             current_actions_return_estimates_exp_sum = reduce_sum(exp(current_return_estimates))
-            current_actions_softmaxes = [exp(current_return_estimates[possible_action_id]) / current_actions_return_estimates_exp_sum
-                                         for possible_action_id in range(self.num_actions)]
+            current_actions_softmaxes = [
+                exp(current_return_estimates[possible_action_id]) / current_actions_return_estimates_exp_sum
+                for possible_action_id in range(self.num_actions)
+            ]
 
             #   clip for numerical stability
             current_actions_log_softmaxes = tf_log(clip_by_value(current_actions_softmaxes,
@@ -144,7 +143,8 @@ class DQNAleaticSoftWrap:
         # ADJUST ENTROPY SCALE ALPHA------------------------------------------------------------------------------------
         # TRAIN ENTROPY SCALE ALPHA TO TARGET
         # with GradientTape() as tape:
-        #     alpha_loss = (-exp(self.log_entropy_scale_alpha) * reduce_sum(log(current_actions_softmaxes)) - self.target_entropy) ** 2
+        #     alpha_loss = (-exp(self.log_entropy_scale_alpha) * reduce_sum(log(current_actions_softmaxes))
+        #                   - self.target_entropy) ** 2
         # alpha_gradients = tape.gradient(target=alpha_loss, sources=[self.log_entropy_scale_alpha])
         # self.entropy_scale_alpha_optimizer.apply_gradients(zip(alpha_gradients, [self.log_entropy_scale_alpha]))
 

@@ -40,7 +40,7 @@ class Config:
             },
             'optimizer': optimizer_adam,
             'optimizer_args': {
-                'learning_rate': 1e-4,
+                'learning_rate': 1e-3,  # 1e-4 for aleatoric
                 'amsgrad': False,
             },
         }

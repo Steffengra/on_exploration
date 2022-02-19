@@ -12,10 +12,10 @@ from pathlib import (
     Path,
 )
 
-from exploration_project_imports.neural_networks import DQNAleatic
+from exploration_project_imports.neural_networks import DQNAleatoric
 
 
-class DQNAleaticWrap:
+class DQNAleatoricWrap:
     def __init__(
             self,
             rng,
@@ -29,7 +29,7 @@ class DQNAleaticWrap:
 
         self.num_actions = hidden_layer_args['num_actions']
 
-        self.dqn = DQNAleatic(**hidden_layer_args)
+        self.dqn = DQNAleatoric(**hidden_layer_args)
         self.dqn.compile(optimizer=optimizer(**optimizer_args))
 
     def get_action(
@@ -50,7 +50,7 @@ class DQNAleaticWrap:
             model_path: Path,
     ) -> None:
         self.dqn(sample_input[newaxis])  # initialize
-        self.dqn.save(Path(model_path, 'dqn_aleatic'))
+        self.dqn.save(Path(model_path, 'dqn_aleatoric'))
 
     def train(
             self,

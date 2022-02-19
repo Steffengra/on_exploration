@@ -6,9 +6,9 @@ from numpy import (
 from tensorflow import (
     one_hot,
     reduce_sum,
+    reduce_max,
     GradientTape,
     function,
-    reduce_max,
 )
 from pathlib import (
     Path,
@@ -54,11 +54,9 @@ class DQNDeterministicWrap:
 
     def save_networks(
             self,
-            sample_input,
             model_path: Path,
     ) -> None:
-        self.dqn(sample_input[newaxis])  # initialize
-        self.dqn.save(Path(model_path, 'dqn_aleatic'))
+        self.dqn.save(Path(model_path, 'dqn_aleatoric'))
 
     def update_target_networks(
             self,
@@ -76,9 +74,11 @@ class DQNDeterministicWrap:
             reward,
             state_next,
     ) -> None:
+        # CONSTRUCT TARGET RETURN ESTIMATE------------------------------------------------------------------------------
         next_action_return_estimates = self.dqn_target.call(state_next[newaxis])
         target_reward_estimate = reward + self.future_reward_discount_gamma * reduce_max(next_action_return_estimates)
 
+        # CALCULATE LOSSES----------------------------------------------------------------------------------------------
         mask = one_hot(action_id, self.num_actions)
         with GradientTape() as tape:
             current_return_estimates = self.dqn.call(state[newaxis])
@@ -86,6 +86,7 @@ class DQNDeterministicWrap:
             td_error = target_reward_estimate - current_return_estimate
             loss = td_error ** 2
 
+        # CALCULATE GRAD AND APPLY
         parameters = self.dqn.trainable_variables
         gradients = tape.gradient(target=loss, sources=parameters)
         self.dqn.optimizer.apply_gradients(zip(gradients, parameters))

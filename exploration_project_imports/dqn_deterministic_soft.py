@@ -56,7 +56,7 @@ class DQNDeterministicSoftWrap:
             model_path: Path,
     ) -> None:
         self.dqn(sample_input[newaxis])  # initialize
-        self.dqn.save(Path(model_path, 'dqn_aleatic'))
+        self.dqn.save(Path(model_path, 'dqn_aleatoric'))
 
     def train(
             self,
