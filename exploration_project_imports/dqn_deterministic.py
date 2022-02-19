@@ -25,11 +25,13 @@ class DQNDeterministicWrap:
             optimizer,
             optimizer_args: dict,
             future_reward_discount_gamma: float,
+            tau_target_network_update: float,
             dummy_input,
     ) -> None:
 
         self.rng = rng
         self.future_reward_discount_gamma: float = future_reward_discount_gamma
+        self.tau_target_network_update: float = tau_target_network_update
 
         self.num_actions = hidden_layer_args['num_actions']
 
@@ -92,5 +94,4 @@ class DQNDeterministicWrap:
         self.dqn.optimizer.apply_gradients(zip(gradients, parameters))
 
         # UPDATE TARGET NETWORK-----------------------------------------------------------------------------------------
-        # TODO: Move to config
-        self.update_target_networks(tau_target_update=0.01)
+        self.update_target_networks(tau_target_update=self.tau_target_network_update)

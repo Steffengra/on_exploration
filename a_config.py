@@ -33,6 +33,7 @@ class Config:
         }
         self.dqn_args: dict = {
             'future_reward_discount_gamma': 0.99,
+            'tau_target_network_update': 0.01,
             'hidden_layer_args': {
                 'hidden_layer_units': [128, 128],
                 'activation_hidden': 'penalized_tanh',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
@@ -40,7 +41,7 @@ class Config:
             },
             'optimizer': optimizer_adam,
             'optimizer_args': {
-                'learning_rate': 1e-3,  # 1e-4 for aleatoric, 1e-3 for deterministic
+                'learning_rate': 1e-4,  # 1e-4 for aleatoric, 1e-3 for deterministic
                 'amsgrad': False,
             },
         }

@@ -36,10 +36,12 @@ class DQNAleatoricSoftWrap:
             optimizer,
             optimizer_args: dict,
             future_reward_discount_gamma: float,
+            tau_target_network_update: float,
             dummy_input,
     ) -> None:
         self.rng = rng
         self.future_reward_discount_gamma: float = future_reward_discount_gamma
+        self.tau_target_network_update: float = tau_target_network_update
 
         # TODO: Maybe move to config
         # Gradients are applied on the log value. This way, entropy_scale_alpha is restricted to positive range
@@ -155,5 +157,4 @@ class DQNAleatoricSoftWrap:
         # self.entropy_scale_alpha_optimizer.apply_gradients(zip(alpha_gradients, [self.log_entropy_scale_alpha]))
 
         # UPDATE TARGET NETWORK-----------------------------------------------------------------------------------------
-        # TODO: Move to config
-        self.update_target_networks(tau_target_update=0.01)
+        self.update_target_networks(tau_target_update=self.tau_target_network_update)
