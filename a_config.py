@@ -20,7 +20,7 @@ class Config:
         self.steps_per_progress_print: int = 100
 
         self.num_episodes: int = 30
-        self.num_steps_per_episode: int = 3_000
+        self.num_steps_per_episode: int = 3000
 
         self.num_channels: int = 2
 
@@ -29,19 +29,19 @@ class Config:
             'minimum_occupation_length': 5,
             'probability_rb_occupation': 0.7,
             'probability_new_puncture_request': 0.1,
-            'probability_critical_request': 0.01,
+            'probability_critical_request': 0.00,
         }
         self.dqn_args: dict = {
             'future_reward_discount_gamma': 0.99,
             'hidden_layer_args': {
                 'hidden_layer_units': [128, 128],
-                'activation_hidden': 'relu',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
+                'activation_hidden': 'penalized_tanh',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
                 'kernel_initializer_hidden': 'glorot_normal',  # options: tf.keras.initializers, default: >'glorot_uniform',
             },
             'optimizer': optimizer_adam,
             'optimizer_args': {
                 'learning_rate': 1e-4,
-                'amsgrad': True,
+                'amsgrad': False,
             },
         }
         self.exploration_epsilon_initial: float = 0.99  # for deterministic only

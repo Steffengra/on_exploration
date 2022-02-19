@@ -1,12 +1,14 @@
 
 from numpy import (
-    argmax,
     newaxis,
+    argmax,
 )
 from tensorflow import (
     one_hot,
     reduce_sum,
     GradientTape,
+    function,
+    reduce_max,
 )
 from pathlib import (
     Path,
@@ -23,6 +25,7 @@ class DQNDeterministicWrap:
             optimizer,
             optimizer_args: dict,
             future_reward_discount_gamma: float,
+            dummy_input,
     ) -> None:
 
         self.rng = rng
@@ -31,13 +34,17 @@ class DQNDeterministicWrap:
         self.num_actions = hidden_layer_args['num_actions']
 
         self.dqn = DQNDeterministic(**hidden_layer_args)
+        self.dqn_target = DQNDeterministic(**hidden_layer_args)
         self.dqn.compile(optimizer=optimizer(**optimizer_args))
+        self.dqn(dummy_input[newaxis])  # initialize weights
+        self.dqn_target(dummy_input[newaxis])  # initialize weights
+        self.update_target_networks(tau_target_update=1.0)
 
     def get_action(
             self,
             state,
     ) -> tuple:
-        return_estimates = self.dqn.call(state[newaxis]).numpy().flatten()
+        return_estimates = self.dqn_target.call(state[newaxis])[0]
         action_id = argmax(return_estimates)
 
         return (
@@ -53,6 +60,15 @@ class DQNDeterministicWrap:
         self.dqn(sample_input[newaxis])  # initialize
         self.dqn.save(Path(model_path, 'dqn_aleatic'))
 
+    def update_target_networks(
+            self,
+            tau_target_update: float
+    ) -> None:
+        for v_primary, v_target in zip(self.dqn.trainable_variables,
+                                       self.dqn_target.trainable_variables):
+            v_target.assign(tau_target_update * v_primary + (1 - tau_target_update) * v_target)
+
+    @function
     def train(
             self,
             state,
@@ -60,12 +76,9 @@ class DQNDeterministicWrap:
             reward,
             state_next,
     ) -> None:
-        (
-            next_action_id,
-            next_action_return_estimate,
-        ) = self.get_action(state=state_next)
+        next_action_return_estimates = self.dqn_target.call(state_next[newaxis])
+        target_reward_estimate = reward + self.future_reward_discount_gamma * reduce_max(next_action_return_estimates)
 
-        target_reward_estimate = reward + self.future_reward_discount_gamma * next_action_return_estimate
         mask = one_hot(action_id, self.num_actions)
         with GradientTape() as tape:
             current_return_estimates = self.dqn.call(state[newaxis])
@@ -75,5 +88,8 @@ class DQNDeterministicWrap:
 
         parameters = self.dqn.trainable_variables
         gradients = tape.gradient(target=loss, sources=parameters)
-        # print(gradients)
         self.dqn.optimizer.apply_gradients(zip(gradients, parameters))
+
+        # UPDATE TARGET NETWORK-----------------------------------------------------------------------------------------
+        # TODO: Move to config
+        self.update_target_networks(tau_target_update=0.01)
