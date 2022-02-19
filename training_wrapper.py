@@ -7,7 +7,7 @@ def main():
     config = Config()
     runner = Runner(config)
 
-    runner.train_dqn_deterministic()
+    runner.train_dqn_aleatic()
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@ class Config:
         self.verbosity: int = 1  # 0=off, 1=yes
         self.steps_per_progress_print: int = 100
 
-        self.num_episodes: int = 20
+        self.num_episodes: int = 30
         self.num_steps_per_episode: int = 3_000
 
         self.num_channels: int = 2
@@ -31,7 +31,7 @@ class Config:
         self.dqn_args: dict = {
             'future_reward_discount_gamma': 0.9,
             'hidden_layer_args': {
-                'hidden_layer_units': [128, 128],
+                'hidden_layer_units': [2,],
                 'activation_hidden': 'relu',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
                 'kernel_initializer_hidden': 'glorot_normal',  # options: tf.keras.initializers, default: >'glorot_uniform',
             },
@@ -49,7 +49,7 @@ class Config:
             'sum_capacity': 1.0,
             'puncture_miss': 5.0,
             'critical_puncture_miss': 5.0,
-            'immediate_puncture': 1.0,
+            'immediate_puncture': 0.0,
         }
 
         # INTERNAL------------------------------------------------------------------------------------------------------

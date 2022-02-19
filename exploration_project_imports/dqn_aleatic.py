@@ -57,12 +57,14 @@ class DQNAleaticWrap:
         target_reward_estimate = reward + self.future_reward_discount_gamma * next_reward_estimate
         mask = one_hot(action_id, self.num_actions)
         with GradientTape() as tape:
-            current_reward_estimates, _ = self.dqn.call(state[newaxis])
+            current_reward_estimates, _ = self.dqn.get_action_and_log_prob_density(state)
             current_reward_estimate = reduce_sum(current_reward_estimates * mask)
             td_error = target_reward_estimate - current_reward_estimate
             loss = td_error ** 2
 
         parameters = self.dqn.trainable_variables
         gradients = tape.gradient(target=loss, sources=parameters)
-        # print(gradients)
+        # for layer in gradients:
+        #     print(layer)
+        # print('\n\n')
         self.dqn.optimizer.apply_gradients(zip(gradients, parameters))
