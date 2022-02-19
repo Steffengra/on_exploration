@@ -32,7 +32,7 @@ class Config:
             'probability_critical_request': 0.01,
         }
         self.dqn_args: dict = {
-            'future_reward_discount_gamma': 0.9,
+            'future_reward_discount_gamma': 0.99,
             'hidden_layer_args': {
                 'hidden_layer_units': [128, 128],
                 'activation_hidden': 'relu',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
@@ -40,8 +40,7 @@ class Config:
             },
             'optimizer': optimizer_adam,
             'optimizer_args': {
-                'learning_rate': 1e-5,
-                'epsilon': 1e-8,
+                'learning_rate': 1e-4,
                 'amsgrad': True,
             },
         }

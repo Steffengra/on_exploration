@@ -1,6 +1,5 @@
 
 from numpy import (
-    ndarray,
     argmax,
     newaxis,
 )
@@ -78,27 +77,3 @@ class DQNDeterministicWrap:
         gradients = tape.gradient(target=loss, sources=parameters)
         # print(gradients)
         self.dqn.optimizer.apply_gradients(zip(gradients, parameters))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

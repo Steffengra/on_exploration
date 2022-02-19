@@ -116,7 +116,7 @@ class PuncturingSimulation:
         state = zeros(3 + self.num_resource_blocks, dtype='float32')
         state[0] = self.step_id / (self.num_steps_per_frame-1)
         state[1] = 1.0 if self.puncture_queue else 0.0  # is puncturing prompt?
-        state[2] = 1.0 if self.puncture_queue and self.puncture_queue[0].critical == 1 else 0.0  # puncturing prompt critical?
+        state[2] = 1.0 if self.puncture_queue and self.puncture_queue[0].critical == 1 else 0.0  # is puncturing prompt critical?
         state[3:3+self.num_resource_blocks] = list(self.resource_block_occupation.values())
         state[3:3+self.num_resource_blocks] = state[3:3+self.num_resource_blocks] / self.num_steps_per_frame
 
