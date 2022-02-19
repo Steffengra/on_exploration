@@ -14,9 +14,10 @@ class Config:
     ) -> None:
         self.simulation_name: str = 'test'
         self.verbosity: int = 1  # 0=off, 1=yes
+        self.steps_per_progress_print: int = 100
 
-        self.num_episodes: int = 2
-        self.num_steps_per_episode: int = 2
+        self.num_episodes: int = 10
+        self.num_steps_per_episode: int = 10_000
 
         self.num_channels: int = 2
 
@@ -31,7 +32,7 @@ class Config:
             'future_reward_discount_gamma': 0.9,
             'hidden_layer_args': {
                 'hidden_layer_units': [2, 2],
-                'activation_hidden': 'penalized_tanh',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
+                'activation_hidden': 'relu',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
                 'kernel_initializer_hidden': 'glorot_normal',  # options: tf.keras.initializers, default: >'glorot_uniform',
             },
             'optimizer': optimizer_adam,

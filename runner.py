@@ -22,15 +22,16 @@ class Runner:
             self,
     ) -> None:
         def progress_print() -> None:
-            progress = (episode_id + 1) / self.config.num_episodes
-            timedelta = datetime.now() - real_time_start
-            finish_time = real_time_start + timedelta / progress
+            if (step_id % self.config.steps_per_progress_print) == 0 and (step_id != 0):
+                progress = (episode_id + step_id / self.config.num_steps_per_episode) / self.config.num_episodes
+                timedelta = datetime.now() - real_time_start
+                finish_time = real_time_start + timedelta / progress
 
-            print(f'\rSimulation completed: {progress:.2%}, '
-                  f'est. finish {finish_time.hour:02d}:{finish_time.minute:02d}:{finish_time.second:02d}', end='')
+                print(f'\rSimulation completed: {progress:.2%}, '
+                      f'est. finish {finish_time.hour:02d}:{finish_time.minute:02d}:{finish_time.second:02d}', end='')
 
         def status_print() -> None:
-            print(f'Last Episode Rewards: {rewards_per_episode[episode_id]:.2f}')
+            print(f'\rLast Episode Rewards per Step: {rewards_per_episode[episode_id] / self.config.num_steps_per_episode:.2f}')
 
         dqn_aleatic = DQNAleaticWrap(**self.config.dqn_args)
         sim = PuncturingSimulation(**self.config.sim_args)
@@ -52,9 +53,11 @@ class Runner:
 
                 episode_reward_sum += reward
 
+                if self.config.verbosity == 1:
+                    progress_print()
+
             stats_per_episode.append(sim.get_stats())
             rewards_per_episode[episode_id] = episode_reward_sum
 
             if self.config.verbosity == 1:
-                progress_print()
                 status_print()

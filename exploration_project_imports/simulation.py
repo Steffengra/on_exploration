@@ -145,7 +145,7 @@ class PuncturingSimulation:
             self.stats['punctures missed'] += 1
             self.stats['critical punctures missed'] += 1
             self.puncture_queue.pop()
-            print('critical puncture missed')
+            # print('critical puncture missed')
             critical_puncture_miss = -1.0
 
         # if prompt still present at frame end after puncture
@@ -153,7 +153,7 @@ class PuncturingSimulation:
         if self.step_id == (self.num_steps_per_frame-1) and self.puncture_queue:
             self.stats['punctures missed'] += 1
             self.puncture_queue.pop()
-            print('puncture missed')
+            # print('puncture missed')
             puncture_miss = -1.0
 
         # SUM CAPACITY--------------------------------------------------------------------------------------------------
