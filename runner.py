@@ -17,8 +17,8 @@ from shutil import (
 from exploration_project_imports.simulation import PuncturingSimulation
 from exploration_project_imports.dqn_deterministic import DQNDeterministicWrap
 from exploration_project_imports.dqn_deterministic_soft import DQNDeterministicSoftWrap
-from exploration_project_imports.dqn_aleatoric import DQNaleatoricWrap
-from exploration_project_imports.dqn_aleatoric_soft import DQNaleatoricSoftWrap
+from exploration_project_imports.dqn_aleatoric import DQNAleatoricWrap
+from exploration_project_imports.dqn_aleatoric_soft import DQNAleatoricSoftWrap
 
 
 class Runner:
@@ -45,7 +45,7 @@ class Runner:
             print(f'\rLast Episode Rewards per Step: '
                   f'{rewards_per_episode[episode_id] / self.config.num_steps_per_episode:.2f}')
 
-        dqn_aleatoric = DQNaleatoricWrap(**self.config.dqn_args)
+        dqn_aleatoric = DQNAleatoricWrap(**self.config.dqn_args)
 
         stats_per_episode = []
         rewards_per_episode = -infty * ones(self.config.num_episodes)
@@ -100,7 +100,7 @@ class Runner:
 
         sim = PuncturingSimulation(**self.config.sim_args)
         new_state = sim.get_state()
-        dqn_aleatoric_soft = DQNaleatoricSoftWrap(**self.config.dqn_args, dummy_input=new_state)
+        dqn_aleatoric_soft = DQNAleatoricSoftWrap(**self.config.dqn_args, dummy_input=new_state)
 
         stats_per_episode = []
         rewards_per_episode = -infty * ones(self.config.num_episodes)
@@ -206,7 +206,7 @@ class Runner:
         for stat in stats_per_episode:
             print(stat)
 
-        dqn_deterministic.save_networks(model_path=self.config.model_path, sample_input=new_state)
+        dqn_deterministic.save_networks(model_path=self.config.model_path)
         copy2('a_config.py', self.config.model_path)  # save config
 
     def train_dqn_deterministic_soft(

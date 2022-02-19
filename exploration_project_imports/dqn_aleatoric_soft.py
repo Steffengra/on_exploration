@@ -25,7 +25,7 @@ from pathlib import (
     Path,
 )
 
-from exploration_project_imports.neural_networks import DQNAleatic
+from exploration_project_imports.neural_networks import DQNAleatoric
 
 
 class DQNAleatoricSoftWrap:
@@ -49,8 +49,8 @@ class DQNAleatoricSoftWrap:
 
         self.num_actions = hidden_layer_args['num_actions']
 
-        self.dqn = DQNAleatic(**hidden_layer_args)
-        self.dqn_target = DQNAleatic(**hidden_layer_args)
+        self.dqn = DQNAleatoric(**hidden_layer_args)
+        self.dqn_target = DQNAleatoric(**hidden_layer_args)
         self.dqn.compile(optimizer=optimizer(**optimizer_args))
         self.dqn(dummy_input[newaxis])  # initialize weights
         self.dqn_target(dummy_input[newaxis])  # initialize weights
