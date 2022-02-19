@@ -28,6 +28,48 @@ from exploration_project_imports.activation_functions import (
 # TODO: Policy Output Activation Linear or Softmax?
 
 
+class DQNDeterministic(Model, ABC):
+    def __init__(
+            self,
+            num_actions: int,
+            hidden_layer_units: list,
+            activation_hidden: str = 'relu',
+            kernel_initializer_hidden: str = 'glorot_uniform',
+    ) -> None:
+        super().__init__()
+
+        # ACTIVATION----------------------------------------------------------------------------------------------------
+        if activation_hidden == 'penalized_tanh':
+            activation_hidden = activation_penalized_tanh
+
+        # LAYERS--------------------------------------------------------------------------------------------------------
+        self.hidden_layers = []
+        for units in hidden_layer_units:
+            self.hidden_layers.append(
+                Dense(
+                    units=units,
+                    kernel_initializer=kernel_initializer_hidden,  # default='glorot_uniform'
+                    activation=activation_hidden,  # default=None
+                    bias_initializer='zeros'  # default='zeros'
+                )
+            )
+        self.output_layer = Dense(units=num_actions, dtype=tf_float32)
+
+    @tf_function
+    def call(
+            self,
+            inputs,
+            training=None,
+            masks=None,
+    ) -> tuple[Tensor, Tensor]:
+        x = inputs
+        for layer in self.hidden_layers:
+            x = layer(x)
+        return_estimates = self.output_layer(x)
+
+        return return_estimates
+
+
 class DQNAleatic(Model, ABC):
     def __init__(
             self,
