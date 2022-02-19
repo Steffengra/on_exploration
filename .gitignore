@@ -4,11 +4,11 @@ __pycache__/
 .idea/
 venv/
 tests/
-SavedModels/
-saved_models/
+*SavedModels/
+*saved_models/
 plotting/
-logs/
-performance_profiles/
+*logs/
+*performance_profiles/
 ignore/
 
 # Files

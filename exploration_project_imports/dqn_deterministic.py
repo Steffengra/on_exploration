@@ -9,6 +9,9 @@ from tensorflow import (
     reduce_sum,
     GradientTape,
 )
+from pathlib import (
+    Path,
+)
 
 from exploration_project_imports.neural_networks import DQNDeterministic
 
@@ -42,6 +45,14 @@ class DQNDeterministicWrap:
             action_id,
             return_estimates[action_id]
         )
+
+    def save_networks(
+            self,
+            sample_input,
+            model_path: Path,
+    ) -> None:
+        self.dqn(sample_input[newaxis])  # initialize
+        self.dqn.save(Path(model_path, 'dqn_aleatic'))
 
     def train(
             self,

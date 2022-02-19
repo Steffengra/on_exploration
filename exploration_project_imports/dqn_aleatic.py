@@ -8,6 +8,9 @@ from tensorflow import (
     one_hot,
     reduce_sum,
 )
+from pathlib import (
+    Path,
+)
 
 from exploration_project_imports.neural_networks import DQNAleatic
 
@@ -40,6 +43,14 @@ class DQNAleaticWrap:
         action = argmax(reward_estimates)
 
         return action, reward_estimates.numpy().flatten()[action], reward_estimate_log_probs.numpy().flatten()[action]
+
+    def save_networks(
+            self,
+            sample_input,
+            model_path: Path,
+    ) -> None:
+        self.dqn(sample_input[newaxis])  # initialize
+        self.dqn.save(Path(model_path, 'dqn_aleatic'))
 
     def train(
             self,

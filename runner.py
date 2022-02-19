@@ -6,6 +6,9 @@ from numpy import (
 from datetime import (
     datetime,
 )
+from shutil import (
+    copy2,
+)
 
 from exploration_project_imports.simulation import PuncturingSimulation
 from exploration_project_imports.dqn_deterministic import DQNDeterministicWrap
@@ -66,6 +69,9 @@ class Runner:
         for stat in stats_per_episode:
             print(stat)
 
+        dqn_aleatic.save_networks(model_path=self.config.model_path, sample_input=new_state)
+        copy2('a_config.py', self.config.model_path)  # save config
+
     def train_dqn_deterministic(
             self,
     ) -> None:
@@ -125,3 +131,6 @@ class Runner:
 
         for stat in stats_per_episode:
             print(stat)
+
+        dqn_deterministic.save_networks(model_path=self.config.model_path, sample_input=new_state)
+        copy2('a_config.py', self.config.model_path)  # save config

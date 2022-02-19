@@ -2,6 +2,9 @@
 from numpy.random import (
     default_rng,
 )
+from pathlib import (
+    Path,
+)
 
 from exploration_project_imports.dl_internals_with_expl import (
     optimizer_adam,
@@ -12,7 +15,7 @@ class Config:
     def __init__(
             self,
     ) -> None:
-        self.simulation_name: str = 'test'
+        self.simulation_title: str = 'test'
         self.verbosity: int = 1  # 0=off, 1=yes
         self.steps_per_progress_print: int = 100
 
@@ -31,7 +34,7 @@ class Config:
         self.dqn_args: dict = {
             'future_reward_discount_gamma': 0.9,
             'hidden_layer_args': {
-                'hidden_layer_units': [2,],
+                'hidden_layer_units': [128, 128],
                 'activation_hidden': 'relu',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
                 'kernel_initializer_hidden': 'glorot_normal',  # options: tf.keras.initializers, default: >'glorot_uniform',
             },
@@ -42,8 +45,8 @@ class Config:
                 'amsgrad': True,
             },
         }
-        self.exploration_epsilon_initial: float = 0.99
-        decay_exploration_epsilon_to_zero_at: float = 0.5
+        self.exploration_epsilon_initial: float = 0.99  # for deterministic only
+        decay_exploration_epsilon_to_zero_at: float = 0.5  # for deterministic only
 
         self.reward_weights: dict = {
             'sum_capacity': 1.0,
@@ -62,7 +65,14 @@ class Config:
         self.sim_args['reward_weights'] = self.reward_weights
         self.sim_args['verbosity'] = self.verbosity
 
+        self.model_path = Path(Path.cwd(), 'zz_saved_models', self.simulation_title)
+        self.log_path = Path(Path.cwd(), 'zz_logs', self.simulation_title)
+
         self.exploration_epsilon_decay_per_step = (
                 self.exploration_epsilon_initial /
                 (decay_exploration_epsilon_to_zero_at * self.num_steps_per_episode * self.num_episodes)
         )
+
+        # POST-INIT-----------------------------------------------------------------------------------------------------
+        self.model_path.mkdir(parents=True, exist_ok=True)
+        self.log_path.mkdir(parents=True, exist_ok=True)
