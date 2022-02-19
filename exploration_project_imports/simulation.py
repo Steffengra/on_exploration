@@ -228,7 +228,7 @@ class PuncturingSimulation:
         # print('\n', self.step_id)
         # print('st', self.stats)
         reward = self._calculate_reward(puncture_resource_block_id=puncture_resource_block_id)
-        print('re', reward)
+        # print('re', reward)
         self.step_id = (self.step_id + 1) % 7
         self._roll_new_rb_power_gain()
         self._update_new_channel_occupation()
