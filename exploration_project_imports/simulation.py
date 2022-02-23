@@ -72,17 +72,17 @@ class PuncturingSimulation:
             new_occupation: dict,
     ) -> None:
         # TEST VALIDITY-------------------------------------------------------------------------------------------------
-        # correct length?
+        #   correct length?
         if not len(new_occupation) == len(self.resource_block_occupation):
             if self.verbosity > 0:
                 print('Error: Invalid dict length')
                 exit()
-        # valid entries?
+        #   valid entries?
         for entry in new_occupation.values():
             if (entry > self.num_steps_per_frame - self.step_id) or (entry < 0):
                 print('Error: Invalid dict entry')
                 exit()
-        # valid keys?
+        #   valid keys?
         for entry in new_occupation.keys():
             if entry < 1 or type(entry) != int:
                 print('Error: Invalid dict key')
@@ -105,6 +105,17 @@ class PuncturingSimulation:
             self.puncture_queue[0].set_critical()
             self.stats['critical punctures prompted'] += 1
 
+    def set_step_id(
+            self,
+            target_step_id: int,
+    ) -> None:
+        self.step_id = target_step_id
+
+    def set_new_power_gains(
+            self,
+    ) -> None:
+        self._roll_new_rb_power_gain()
+
     def get_stats(
             self,
     ) -> dict:
@@ -115,8 +126,10 @@ class PuncturingSimulation:
     ) -> ndarray:
         state = zeros(3 + self.num_resource_blocks, dtype='float32')
         state[0] = self.step_id / (self.num_steps_per_frame-1)
-        state[1] = 1.0 if self.puncture_queue else 0.0  # is puncturing prompt?
-        state[2] = 1.0 if self.puncture_queue and self.puncture_queue[0].critical == 1 else 0.0  # is puncturing prompt critical?
+        #   is puncturing prompt?
+        state[1] = 1.0 if self.puncture_queue else 0.0
+        #   is puncturing prompt critical?
+        state[2] = 1.0 if self.puncture_queue and self.puncture_queue[0].critical == 1 else 0.0
         state[3:3+self.num_resource_blocks] = list(self.resource_block_occupation.values())
         state[3:3+self.num_resource_blocks] = state[3:3+self.num_resource_blocks] / self.num_steps_per_frame
 
@@ -129,17 +142,17 @@ class PuncturingSimulation:
         # PUNCTURE------------------------------------------------------------------------------------------------------
         immediate_puncture = 0.0
         if puncture_resource_block_id > 0:
-            # if there was a prompt and it was not delayed
+            #   if there was a prompt and it was not delayed
             if self.puncture_queue and self.puncture_queue[0].delay == 0:
                 immediate_puncture = 1.0
-            # clear prompts
+            #   clear prompts
             self.puncture_queue = []
-            # if puncture on rb that was occupied
+            #   if puncture on rb that was occupied
             if self.resource_block_occupation[puncture_resource_block_id] > 0:
                 self.resource_block_occupation[puncture_resource_block_id] = 0
                 self.stats['tx interrupted'] += 1
 
-        # if critical prompt still present after puncture
+        #   if critical prompt still present after puncture
         critical_puncture_miss = -0.0
         if self.puncture_queue and self.puncture_queue[0].critical == 1:
             self.stats['punctures missed'] += 1
@@ -148,7 +161,7 @@ class PuncturingSimulation:
             # print('critical puncture missed')
             critical_puncture_miss = -1.0
 
-        # if prompt still present at frame end after puncture
+        #   if prompt still present at frame end after puncture
         puncture_miss = -0.0
         if self.step_id == (self.num_steps_per_frame-1) and self.puncture_queue:
             self.stats['punctures missed'] += 1
@@ -181,20 +194,20 @@ class PuncturingSimulation:
     def _update_new_channel_occupation(
             self,
     ) -> None:
-        # if start of frame: fill in new occupations
+        #   if start of frame: fill in new occupations
         if self.step_id == 0:
-            # for each channel
+            #   for each channel
             for rb_id in self.resource_block_occupation.keys():
-                # at a probability, fill in a job
+                #   at a probability, fill in a job
                 if self.rng.random() < self.probability_rb_occupation:
                     self.resource_block_occupation[rb_id] = self.rng.choice(range(self.minimum_occupation_length,
                                                                                   self.num_steps_per_frame+1))
                     self.stats['tx started'] += 1
-        # else: reduce occupation duration by 1
+        #   else: reduce occupation duration by 1
         else:
-            # for each channel
+            #   for each channel
             for rb_id in self.resource_block_occupation.keys():
-                # if occupied reduce duration by 1
+                #   if occupied reduce duration by 1
                 if self.resource_block_occupation[rb_id] > 0:
                     self.resource_block_occupation[rb_id] -= 1
 
@@ -205,13 +218,13 @@ class PuncturingSimulation:
     ) -> None:
         # TODO: currently nothing stops this from throwing another puncture within a frame
 
-        # if there is no puncture prompted
+        #   if there is no puncture prompted
         if not self.puncture_queue:
-            # at probability add prompt
+            #   at probability add prompt
             if self.rng.random() < self.probability_new_puncture_request:
                 self.puncture_queue = [PunctureJob()]
                 self.stats['punctures prompted'] += 1
-                # at probability make prompt critical
+                #   at probability make prompt critical
                 if self.rng.random() < self.probability_critical_request:
                     self.puncture_queue[0].set_critical()
                     self.stats['critical punctures prompted'] += 1

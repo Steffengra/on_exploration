@@ -10,6 +10,9 @@ from tensorflow import (
     GradientTape,
     function,
 )
+from tensorflow.keras.models import (
+    load_model,
+)
 from pathlib import (
     Path,
 )
@@ -58,7 +61,13 @@ class DQNDeterministicWrap:
             self,
             model_path: Path,
     ) -> None:
-        self.dqn.save(Path(model_path, 'dqn_aleatoric'))
+        self.dqn.save(Path(model_path, 'dqn_deterministic'))
+
+    def load_network(
+            self,
+            model_path: Path,
+    ):
+        self.dqn = load_model(model_path)
 
     def update_target_networks(
             self,

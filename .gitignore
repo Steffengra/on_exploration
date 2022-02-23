@@ -6,7 +6,7 @@ venv/
 tests/
 *SavedModels/
 *saved_models/
-plotting/
+*plotting/
 *logs/
 *performance_profiles/
 ignore/

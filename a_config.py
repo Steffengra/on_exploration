@@ -15,8 +15,8 @@ class Config:
     def __init__(
             self,
     ) -> None:
-        self.simulation_title: str = 'test'
-        self.verbosity: int = 1  # 0=off, 1=yes
+        self.simulation_title: str = 'test_0'
+        self.verbosity: int = 1  # 0==off, 1==yes
         self.steps_per_progress_print: int = 100
 
         self.num_episodes: int = 30
@@ -33,11 +33,13 @@ class Config:
         }
         self.dqn_args: dict = {
             'future_reward_discount_gamma': 0.99,
-            'tau_target_network_update': 0.01,
+            'tau_target_network_update': 1e-4,
             'hidden_layer_args': {
                 'hidden_layer_units': [128, 128],
-                'activation_hidden': 'penalized_tanh',  # [>'relu', 'elu', 'tanh' 'penalized_tanh']
-                'kernel_initializer_hidden': 'glorot_normal',  # options: tf.keras.initializers, default: >'glorot_uniform',
+                'activation_hidden': 'penalized_tanh',
+                #   [>'relu', 'elu', 'tanh' 'penalized_tanh']
+                'kernel_initializer_hidden': 'glorot_normal',
+                #   options: tf.keras.initializers, default: >'glorot_uniform',
             },
             'optimizer': optimizer_adam,
             'optimizer_args': {

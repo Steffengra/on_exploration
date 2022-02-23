@@ -18,8 +18,11 @@ from tensorflow import (
 from tensorflow.math import (
     log as tf_log,
 )
-from tensorflow.keras.optimizers import(
+from tensorflow.keras.optimizers import (
     SGD,
+)
+from tensorflow.keras.models import (
+    load_model,
 )
 from pathlib import (
     Path,
@@ -84,6 +87,12 @@ class DQNAleatoricSoftWrap:
     ) -> None:
         self.dqn.save(Path(model_path, 'dqn_aleatoric_soft'))
 
+    def load_network(
+            self,
+            model_path: Path,
+    ):
+        self.dqn = load_model(model_path)
+
     @function
     def train(
             self,
@@ -102,15 +111,15 @@ class DQNAleatoricSoftWrap:
 
         # CALCULATE NEXT STATE ENTROPY
         #   this promotes actions that lead to states with high entropy == similar reward estimates
-        # next_actions_return_estimates_exp_sum = reduce_sum(exp(next_return_estimates))
-        # next_actions_softmaxes = [
-        #     exp(next_return_estimates[possible_action_id]) / next_actions_return_estimates_exp_sum
-        #     for possible_action_id in range(self.num_actions)]
+        next_actions_return_estimates_exp_sum = reduce_sum(exp(next_return_estimates))
+        next_actions_softmaxes = [
+            exp(next_return_estimates[possible_action_id]) / next_actions_return_estimates_exp_sum
+            for possible_action_id in range(self.num_actions)]
 
         # ASSEMBLE TARGET RETURN ESTIMATE
         target_reward_estimate = reward + self.future_reward_discount_gamma * (
             reduce_max(next_return_estimates)  # max next state return
-            # sum(next_actions_softmaxes * next_return_estimates)  # appx next state return
+            # reduce_sum(next_actions_softmaxes * next_return_estimates)  # appx next state return
             # - exp(self.log_entropy_scale_alpha) * sum(log(next_actions_softmaxes))  # appx next entropy
         )
 

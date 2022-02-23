@@ -57,8 +57,6 @@ class DQNDeterministic(Model, ABC):
     def call(
             self,
             inputs,
-            training=None,
-            masks=None,
     ) -> tuple[Tensor, Tensor]:
         x = inputs
         for layer in self.hidden_layers:
@@ -100,8 +98,6 @@ class DQNAleatoric(Model, ABC):
     def call(
             self,
             inputs,
-            training=None,
-            masks=None,
     ) -> tuple[Tensor, Tensor]:
         x = inputs
         for layer in self.hidden_layers:
