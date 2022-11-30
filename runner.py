@@ -29,6 +29,7 @@ from exploration_project_imports.simulation import PuncturingSimulation
 from exploration_project_imports.dqn_deterministic import DQNDeterministicWrap
 from exploration_project_imports.dqn_aleatoric import DQNAleatoricWrap
 from exploration_project_imports.dqn_aleatoric_soft import DQNAleatoricSoftWrap
+from exploration_project_imports.manual_scheduler import ManualScheduler
 
 
 class Runner:
@@ -443,3 +444,57 @@ class Runner:
         ]
         with gzip_open(Path(self.config.log_path, f'testing_critical_metrics.gzip'), 'wb') as file:
             pickle_dump(metrics, file=file)
+
+    def test_manual_scheduler(
+            self,
+    ) -> None:
+        def progress_print() -> None:
+            if (step_id % self.config.steps_per_progress_print) == 0 and (step_id != 0):
+                progress = (episode_id + step_id / self.config.num_steps_per_episode) / self.config.num_episodes
+                timedelta = datetime.now() - real_time_start
+                finish_time = real_time_start + timedelta / progress
+
+                print(f'\rSimulation completed: {progress:.2%}, '
+                      f'est. finish {finish_time.hour:02d}:{finish_time.minute:02d}:{finish_time.second:02d}', end='')
+
+        def status_print() -> None:
+            print(f'\rLast Episode Rewards per Step: '
+                  f'{rewards_per_episode[episode_id] / self.config.num_steps_per_episode:.2f}')
+
+        training_name = 'train_manual_scheduler'
+
+        scheduler = ManualScheduler(rng=self.config.rng)
+
+        stats_per_episode = []
+        rewards_per_episode = -infty * ones(self.config.num_episodes)
+        real_time_start = datetime.now()
+        for episode_id in range(self.config.num_episodes):
+            sim = PuncturingSimulation(**self.config.sim_args)
+            new_state = sim.get_state()
+            episode_reward_sum = 0
+            for step_id in range(self.config.num_steps_per_episode):
+                current_state = new_state.copy()
+                action_id = scheduler.get_action(current_state)
+                reward = sim.step(puncture_resource_block_id=action_id)
+                new_state = sim.get_state()
+
+                episode_reward_sum += reward
+
+                if self.config.verbosity == 1:
+                    progress_print()
+
+            stats_per_episode.append(sim.get_stats())
+            rewards_per_episode[episode_id] = episode_reward_sum
+
+            if self.config.verbosity == 1:
+                status_print()
+                print(sim.get_stats())
+
+        for stat in stats_per_episode:
+            print(stat)
+
+        # SAVE RESULTS
+        metrics = [rewards_per_episode, stats_per_episode]
+        with gzip_open(Path(self.config.log_path, f'{training_name}_metrics.gzip'), 'wb') as file:
+            pickle_dump(metrics, file=file)
+        copy2('a_config.py', self.config.model_path)  # save config

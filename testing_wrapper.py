@@ -7,7 +7,8 @@ def main():
     config = Config()
     runner = Runner(config)
 
-    runner.test_critical()
+    # runner.test_critical()
+    runner.test_manual_scheduler()
 
 
 if __name__ == '__main__':
